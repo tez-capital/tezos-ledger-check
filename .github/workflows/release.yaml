@@ -1,0 +1,52 @@
+name: release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.22.0'
+      - name: Test
+        run: go test -v ./...
+
+      - name: install zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.13.0
+
+      - name: setup eli
+        uses: alis-is/setup-eli@v1
+      - name: inject version
+        run: |
+          eli .github/inject_version.lua ${{ github.ref_name }}
+
+    #   CGO_ENABLED=1 CC="zig cc -target x86_64-linux-musl" go build -a -installsuffix cgo -trimpath -ldflags '-s -w -extldflags "-static"'
+    #   - name: Build win-arm64
+    #     run: env CGO_ENABLED=0 GOOS=windows GOARCH=arm64 CC="zig cc -target aarch64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-arm64.exe
+    #   - name: Build win-amd64
+    #     run: env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-amd64.exe
+      - name: Build linux-arm64
+        run: env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 CC="zig cc -target aarch64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-arm64
+      - name: Build linux-riscv64
+        run: env CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 CC="zig cc -target riscv64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-riscv64
+      - name: Build linux-amd64
+        run: env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-amd64
+      - name: Build macos-arm64
+        run: env CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
+      - name: Build macos-amd64
+        run: env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 CC="zig cc -target x86_64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-amd64
+
+      - name: Upload files to a GitHub release
+        uses: svenstaro/upload-release-action@2.4.0
+        with:
+          file_glob: true
+          tag: ${{ github.ref }}
+          file: bin/ttezos-check-ledger*
