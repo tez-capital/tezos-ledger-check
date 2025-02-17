@@ -81,10 +81,10 @@ func runLedgerCheck(bus, address string) {
 		os.Exit(1)
 	}
 
-	hids := hid.Enumerate(ledger.LEDGER_VENDOR_ID, 0)
+	hids := hid.Enumerate(0, 0)
 
 	for _, d := range hids {
-		if d.VendorID != ledger.LEDGER_VENDOR_ID {
+		if !ledger.IsLedger(d.VendorID) {
 			continue
 		}
 

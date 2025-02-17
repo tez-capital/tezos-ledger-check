@@ -5,13 +5,14 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/karalabe/hid"
 	"github.com/trilitech/tzgo/tezos"
 )
 
-const (
-	LEDGER_VENDOR_ID = 11415
+var (
+	VENDOR_IDS = []uint16{0x2c97, 0x2581}
 )
 
 type Curve int
@@ -83,8 +84,12 @@ func createGetPublicKeyAPDU() ([]byte, error) {
 	return apdu, nil
 }
 
+func IsLedger(vendorID uint16) bool {
+	return slices.Contains(VENDOR_IDS, vendorID)
+}
+
 func GetLedgerId(h *hid.Device) (string, error) {
-	if h.DeviceInfo.VendorID != LEDGER_VENDOR_ID {
+	if !IsLedger(h.DeviceInfo.VendorID) {
 		return "", fmt.Errorf("device is not a Ledger device")
 	}
 
@@ -124,7 +129,7 @@ func createGetVersionAPDU() ([]byte, error) {
 }
 
 func GetAppVersion(h *hid.Device) (string, error) {
-	if h.DeviceInfo.VendorID != LEDGER_VENDOR_ID {
+	if !IsLedger(h.DeviceInfo.VendorID) {
 		return "", fmt.Errorf("device is not a Ledger device")
 	}
 
@@ -156,7 +161,7 @@ func createGetAuthorizedKeyAPDU() ([]byte, error) {
 }
 
 func GetAuthorizedPath(h *hid.Device) (string, error) {
-	if h.DeviceInfo.VendorID != LEDGER_VENDOR_ID {
+	if !IsLedger(h.DeviceInfo.VendorID) {
 		return "", fmt.Errorf("device is not a Ledger device")
 	}
 
