@@ -146,7 +146,7 @@ func runLedgerCheck(bus, address string) {
 			ledgerId, err = ledger.GetLedgerId(device)
 			if err != nil {
 				slog.Debug("failed to get ledger id", "error", err.Error())
-				ledgerId = fmt.Sprintf("ledger response: %s", err.Error())
+				ledgerId = err.Error()
 			} else {
 				appVersion, err = ledger.GetAppVersion(device)
 				if err != nil {
