@@ -30,19 +30,19 @@ jobs:
 
     #   CGO_ENABLED=1 CC="zig cc -target x86_64-linux-musl" go build -a -installsuffix cgo -trimpath -ldflags '-s -w -extldflags "-static"'
     #   - name: Build win-arm64
-    #     run: env CGO_ENABLED=0 GOOS=windows GOARCH=arm64 CC="zig cc -target aarch64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-arm64.exe
+    #     run: env CGO_ENABLED=1 GOOS=windows GOARCH=arm64 CC="zig cc -target aarch64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-arm64.exe
     #   - name: Build win-amd64
-    #     run: env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-amd64.exe
+    #     run: env CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows-gnu" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-win-amd64.exe
       - name: Build linux-arm64
-        run: env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 CC="zig cc -target aarch64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-arm64
+        run: env CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC="zig cc -target aarch64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-arm64
       - name: Build linux-riscv64
-        run: env CGO_ENABLED=0 GOOS=linux GOARCH=riscv64 CC="zig cc -target riscv64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-riscv64
+        run: env CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC="zig cc -target riscv64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-riscv64
       - name: Build linux-amd64
-        run: env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-amd64
+        run: env CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-amd64
       - name: Build macos-arm64
-        run: env CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
+        run: env CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
       - name: Build macos-amd64
-        run: env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 CC="zig cc -target x86_64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-amd64
+        run: env CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CC="zig cc -target x86_64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-amd64
 
       - name: Upload files to a GitHub release
         uses: svenstaro/upload-release-action@2.4.0

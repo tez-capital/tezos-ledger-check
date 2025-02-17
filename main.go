@@ -76,7 +76,12 @@ func main() {
 }
 
 func runLedgerCheck(bus, address string) {
-	hids := hid.Enumerate(11415, 0)
+	if !hid.Supported() {
+		slog.Error("HID not supported")
+		os.Exit(1)
+	}
+
+	hids := hid.Enumerate(ledger.LEDGER_VENDOR_ID, 0)
 
 	for _, d := range hids {
 		if d.VendorID != ledger.LEDGER_VENDOR_ID {
@@ -141,6 +146,7 @@ func runLedgerCheck(bus, address string) {
 			ledgerId, err = ledger.GetLedgerId(device)
 			if err != nil {
 				slog.Debug("failed to get ledger id", "error", err.Error())
+				ledgerId = fmt.Sprintf("ledger response: %s", err.Error())
 			} else {
 				appVersion, err = ledger.GetAppVersion(device)
 				if err != nil {
