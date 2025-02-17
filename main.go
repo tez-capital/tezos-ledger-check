@@ -134,25 +134,25 @@ func runLedgerCheck(bus, address string) {
 		if err != nil {
 			panic(err)
 		}
-		defer device.Close()
+		func() {
+			defer device.Close()
 
-		ledgerId, err := ledger.GetLedgerId(device)
-		if err != nil {
-			slog.Debug("failed to get ledger id", "error", err.Error())
-			continue
-		}
+			ledgerId, appVersion, authorizedPath := "-", "-", "-"
+			ledgerId, err = ledger.GetLedgerId(device)
+			if err != nil {
+				slog.Debug("failed to get ledger id", "error", err.Error())
+			} else {
+				appVersion, err = ledger.GetAppVersion(device)
+				if err != nil {
+					appVersion = err.Error()
+				}
+				authorizedPath, err = ledger.GetAuthorizedPath(device)
+				if err != nil {
+					authorizedPath = err.Error()
+				}
+			}
 
-		appVersion, err := ledger.GetAppVersion(device)
-		appVersionOrError := appVersion
-		if err != nil {
-			appVersionOrError = err.Error()
-		}
-		authorizedPath, err := ledger.GetAuthorizedPath(device)
-		authorizedPathOrError := authorizedPath
-		if err != nil {
-			authorizedPathOrError = err.Error()
-		}
-
-		fmt.Printf("%s,%s,%s,%s:%s\n", ledgerId, appVersionOrError, authorizedPathOrError, parts[0] /* bus */, parts[1] /* address */)
+			fmt.Printf("%s,%s,%s,%s:%s\n", ledgerId, appVersion, authorizedPath, parts[0] /* bus */, parts[1] /* address */)
+		}()
 	}
 }
