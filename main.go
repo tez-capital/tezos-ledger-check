@@ -141,18 +141,18 @@ func runLedgerCheck(bus, address string) {
 			slog.Debug("failed to get ledger id", "error", err.Error())
 			continue
 		}
-		p1 := ledgerId
+
 		appVersion, err := ledger.GetAppVersion(device)
-		p2 := appVersion
+		appVersionOrError := appVersion
 		if err != nil {
-			p2 = err.Error()
+			appVersionOrError = err.Error()
 		}
 		authorizedPath, err := ledger.GetAuthorizedPath(device)
-		p3 := authorizedPath
+		authorizedPathOrError := authorizedPath
 		if err != nil {
-			p3 = err.Error()
+			authorizedPathOrError = err.Error()
 		}
 
-		fmt.Printf("%s:%s:%s/%s:%s\n", p1, p2, p3, parts[0], parts[1])
+		fmt.Printf("%s,%s,%s,%s:%s\n", ledgerId, appVersionOrError, authorizedPathOrError, parts[0] /* bus */, parts[1] /* address */)
 	}
 }
