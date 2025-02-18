@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -79,10 +80,41 @@ func main() {
 
 }
 
-func runLedgerCheck(bus, address, lookingForledgerId string) {
+func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 	if !hid.Supported() {
 		slog.Error("HID not supported")
 		os.Exit(1)
+	}
+
+	desiredBuses := []uint64{}
+	if busString != "" {
+		busStrings := strings.Split(busString, ",")
+		for _, b := range busStrings {
+			bus, err := strconv.ParseUint(b, 16, 64)
+			if err != nil {
+				slog.Error("failed to parse bus", "bus", b, "error", err.Error())
+				os.Exit(1)
+			}
+			desiredBuses = append(desiredBuses, bus)
+		}
+	}
+
+	desiredAddresses := []uint64{}
+	if addressString != "" {
+		addressStrings := strings.Split(addressString, ",")
+		for _, a := range addressStrings {
+			address, err := strconv.ParseUint(a, 16, 64)
+			if err != nil {
+				slog.Error("failed to parse address", "address", a, "error", err.Error())
+				os.Exit(1)
+			}
+			desiredAddresses = append(desiredAddresses, address)
+		}
+	}
+
+	desiredLedgerIds := []string{}
+	if desiredLedgerId != "" {
+		desiredLedgerIds = strings.Split(desiredLedgerId, ",")
 	}
 
 	hids := hid.Enumerate(0, 0)
@@ -103,37 +135,27 @@ func runLedgerCheck(bus, address, lookingForledgerId string) {
 			continue
 		}
 
-		if bus != "" {
+		if len(desiredBuses) > 0 {
 			devBus, err := strconv.ParseUint(parts[0], 16, 64)
 			if err != nil {
 				slog.Error("failed to parse device bus", "bus", parts[0], "error", err.Error())
 				os.Exit(1)
 			}
-			desiredBus, err := strconv.ParseUint(bus, 16, 64)
-			if err != nil {
-				slog.Error("failed to parse desired bus", "bus", bus, "error", err.Error())
-				os.Exit(1)
-			}
 
-			if devBus != desiredBus {
+			if !slices.Contains(desiredBuses, devBus) {
 				slog.Debug("skipping bus", "bus", parts[0])
 				continue
 			}
 		}
 
-		if address != "" && parts[1] != address {
+		if len(desiredAddresses) > 0 {
 			devAddress, err := strconv.ParseUint(parts[1], 16, 64)
 			if err != nil {
 				slog.Error("failed to parse device address", "address", parts[1], "error", err.Error())
 				os.Exit(1)
 			}
-			desiredaddress, err := strconv.ParseUint(address, 16, 64)
-			if err != nil {
-				slog.Error("failed to parse desired address", "address", address, "error", err.Error())
-				os.Exit(1)
-			}
 
-			if devAddress != desiredaddress {
+			if !slices.Contains(desiredAddresses, devAddress) {
 				slog.Debug("skipping address", "address", parts[1])
 				continue
 			}
@@ -151,11 +173,11 @@ func runLedgerCheck(bus, address, lookingForledgerId string) {
 			if err != nil {
 				slog.Debug("failed to get ledger id", "error", err.Error())
 				ledgerId = fmt.Sprintf("-,%s", err.Error())
-				if lookingForledgerId != "" {
+				if len(desiredLedgerIds) > 0 {
 					return
 				}
 			} else {
-				if lookingForledgerId != "" && ledgerId != lookingForledgerId {
+				if len(desiredLedgerIds) > 0 && !slices.Contains(desiredLedgerIds, ledgerId) {
 					return
 				}
 				appVersion, err = ledger.GetAppVersion(device)
