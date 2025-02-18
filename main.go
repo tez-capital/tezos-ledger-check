@@ -17,9 +17,9 @@ import (
 func main() {
 
 	app := &cli.App{
-		Name:    "ledger-check",
-		Usage:   "Scan Ledger devices and display their app version and ledger id.",
-		Version: VERSION,
+		Name:        "ledger-check",
+		Usage:       "Scan Ledger devices and display their app version and ledger id.",
+		HideVersion: true,
 		Commands: []*cli.Command{
 			{
 				Name:    "version",
@@ -52,8 +52,17 @@ func main() {
 				Aliases: []string{"l"},
 				Value:   "info",
 			},
+			&cli.BoolFlag{
+				Name:  "version",
+				Usage: "Prints the version",
+			},
 		},
 		Action: func(c *cli.Context) error {
+			if c.Bool("version") {
+				fmt.Println(VERSION)
+				return nil
+			}
+
 			logLevel := c.String("log-level")
 			switch logLevel {
 			case "debug":
