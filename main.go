@@ -42,6 +42,10 @@ func main() {
 				Aliases: []string{"a"},
 			},
 			&cli.StringFlag{
+				Name:  "ledger-id",
+				Usage: "Filter by ledger id",
+			},
+			&cli.StringFlag{
 				Name:    "log-level",
 				Usage:   "Set the log level (debug, info, warn, error)",
 				Aliases: []string{"l"},
@@ -63,7 +67,7 @@ func main() {
 				log.Fatalf("Invalid log level: %s", logLevel)
 			}
 
-			runLedgerCheck(c.String("bus"), c.String("address"))
+			runLedgerCheck(c.String("bus"), c.String("address"), c.String("ledger-id"))
 			return nil
 		},
 	}
@@ -75,7 +79,7 @@ func main() {
 
 }
 
-func runLedgerCheck(bus, address string) {
+func runLedgerCheck(bus, address, lookingForledgerId string) {
 	if !hid.Supported() {
 		slog.Error("HID not supported")
 		os.Exit(1)
@@ -147,7 +151,13 @@ func runLedgerCheck(bus, address string) {
 			if err != nil {
 				slog.Debug("failed to get ledger id", "error", err.Error())
 				ledgerId = fmt.Sprintf("-,%s", err.Error())
+				if lookingForledgerId != "" {
+					return
+				}
 			} else {
+				if lookingForledgerId != "" && ledgerId != lookingForledgerId {
+					return
+				}
 				appVersion, err = ledger.GetAppVersion(device)
 				if err != nil {
 					appVersion = fmt.Sprintf("-,%s", err.Error())
