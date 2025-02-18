@@ -161,11 +161,12 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 			}
 		}
 
-		device, err := d.Open()
-		if err != nil {
-			panic(err)
-		}
 		func() {
+			device, err := d.Open()
+			if err != nil {
+				slog.Debug("failed to open device", "error", err.Error())
+				return
+			}
 			defer device.Close()
 
 			ledgerId, appVersion, authorizedPath := "-", "-", "-"
