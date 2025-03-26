@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strings"
 
 	"github.com/karalabe/hid"
 	"github.com/trilitech/tzgo/tezos"
@@ -178,7 +179,8 @@ func GetAuthorizedPath(h *hid.Device) (string, error) {
 	// shift 1
 
 	curve := Curve(response[0])
-	pathComponentsLength := int(response[1:][0])
+	response = response[1:]
+	pathComponentsLength := int(response[0])
 	response = response[1:]
 	// each component is 4 bytes
 	if len(response) < 4+pathComponentsLength { // 4 bytes per component
@@ -192,12 +194,12 @@ func GetAuthorizedPath(h *hid.Device) (string, error) {
 		return []byte{b[0] & 0x7F, b[1], b[2], b[3]}
 	}
 
-	c1 := binary.BigEndian.Uint32(unhard(response[1:5]))
-	c2 := binary.BigEndian.Uint32(unhard(response[5:9]))
-	c3 := binary.BigEndian.Uint32(unhard(response[9:13]))
-	c4 := binary.BigEndian.Uint32(unhard(response[13:17]))
+	components := make([]string, pathComponentsLength)
+	for i := 0; i < pathComponentsLength; i++ {
+		components[i] = fmt.Sprintf("%d", binary.BigEndian.Uint32(unhard(response[i*4:(i+1)*4])))
+	}
 
-	path := fmt.Sprintf("%s:%d/%d/%d/%d", curve, c1, c2, c3, c4)
+	path := fmt.Sprintf("%s:%s", curve, strings.Join(components, "/"))
 
 	return path, nil
 }
