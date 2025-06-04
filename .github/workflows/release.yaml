@@ -39,8 +39,8 @@ jobs:
         run: env CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC="zig cc -target riscv64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-riscv64
       - name: Build linux-amd64
         run: env CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-amd64
-      # - name: Build macos-arm64
-      #   run: env CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
+      - name: Build macos-arm64
+        run: env CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
       # - name: Build macos-amd64
       #   run: env CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 CC="zig cc -target x86_64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-amd64
 
