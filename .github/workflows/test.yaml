@@ -14,6 +14,11 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '>=1.22.0'
+
+      - name: install zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: master
           
       - name: Test
         run: go test -v ./...
