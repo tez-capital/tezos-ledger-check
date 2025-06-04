@@ -1,12 +1,20 @@
 name: test
+
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  linux-builds:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - { goos: linux, goarch: arm64, zig_target: aarch64-linux-musl,   output: tezos-check-ledger-linux-arm64 }
+          - { goos: linux, goarch: riscv64, zig_target: riscv64-linux-musl, output: tezos-check-ledger-linux-riscv64 }
+          - { goos: linux, goarch: amd64, zig_target: x86_64-linux-musl,    output: tezos-check-ledger-linux-amd64 }
+
     steps:
       - uses: actions/checkout@v3
 
@@ -15,20 +23,48 @@ jobs:
         with:
           go-version: '>=1.22.0'
 
-      - name: install zig
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: master
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Build ${{ matrix.target.output }}
+        run: |
+          env CGO_ENABLED=1 \
+              GOOS=${{ matrix.target.goos }} \
+              GOARCH=${{ matrix.target.goarch }} \
+              CC="zig cc -target ${{ matrix.target.zig_target }}" \
+              go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/${{ matrix.target.output }}
+
+  macos-build:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target:
+          - { goos: darwin, goarch: arm64, zig_target: aarch64-macos-none, output: tezos-check-ledger-macos-arm64 }
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '>=1.22.0'
+
+      - name: Install Zig
         uses: mlugg/setup-zig@v2
         with:
           version: master
           
-      - name: Test
+      - name: Run tests
         run: go test -v ./...
 
-      - name: Build linux-arm64
-        run: env CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CC="zig cc -target aarch64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-arm64
-      - name: Build linux-riscv64
-        run: env CGO_ENABLED=1 GOOS=linux GOARCH=riscv64 CC="zig cc -target riscv64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-riscv64
-      - name: Build linux-amd64
-        run: env CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CC="zig cc -target x86_64-linux-musl" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-linux-amd64
-      - name: Build macos-arm64
-        run: env CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 CC="zig cc -target aarch64-macos-none" go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/tezos-check-ledger-macos-arm64
-      
+      - name: Build ${{ matrix.target.output }}
+        run: |
+          env CGO_ENABLED=1 \
+              GOOS=${{ matrix.target.goos }} \
+              GOARCH=${{ matrix.target.goarch }} \
+              CC="zig cc -target ${{ matrix.target.zig_target }}" \
+              go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/${{ matrix.target.output }}
