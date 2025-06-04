@@ -66,4 +66,4 @@ jobs:
           env CGO_ENABLED=1 \
               GOOS=${{ matrix.target.goos }} \
               GOARCH=${{ matrix.target.goarch }} \
-              go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/${{ matrix.target.output }}
+              go build -ldflags='-s -w' -trimpath -o bin/${{ matrix.target.output }}
