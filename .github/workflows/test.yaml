@@ -57,7 +57,7 @@ jobs:
         uses: mlugg/setup-zig@v2
         with:
           version: master
-          
+
       - name: Run tests
         run: go test -v ./...
 
@@ -67,4 +67,5 @@ jobs:
               GOOS=${{ matrix.target.goos }} \
               GOARCH=${{ matrix.target.goarch }} \
               CC="zig cc -target ${{ matrix.target.zig_target }}" \
+              CGO_CFLAGS="-F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -framework IOKit -framework CoreFoundation" \
               go build -ldflags='-s -w -extldflags "-static"' -trimpath -o bin/${{ matrix.target.output }}
