@@ -134,11 +134,11 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 	}
 
 	for _, d := range hids {
+		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 		if !ledger.IsLedger(d.VendorID) {
+			slog.Debug("skipping non-Ledger device", "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 			continue
 		}
-
-		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 
 		parts := []string{"-", "-", "-"}
 		if runtime.GOOS != "darwin" {
@@ -187,11 +187,6 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 				return
 			}
 			defer device.Close()
-
-			if !ledger.IsLedger(d.VendorID) {
-				slog.Debug("device is not a Ledger device", "vendor_id", d.VendorID)
-				return
-			}
 
 			ledgerId, appVersion, authorizedPath := "-", "-", "-"
 			ledgerId, err = ledger.GetLedgerId(device)
