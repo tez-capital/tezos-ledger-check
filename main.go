@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -134,40 +135,43 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 		}
 
 		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
-		if d.Interface != 0 {
-			slog.Debug("skipping non default interface", "interface", d.Interface)
-			continue
-		}
 
-		parts := strings.Split(d.Path, ":")
-		if len(parts) < 3 {
-			slog.Debug("skipping invalid path", "path", d.Path)
-			continue
-		}
-
-		if len(desiredBuses) > 0 {
-			devBus, err := strconv.ParseUint(parts[0], 16, 64)
-			if err != nil {
-				slog.Error("failed to parse device bus", "bus", parts[0], "error", err.Error())
-				os.Exit(1)
-			}
-
-			if !slices.Contains(desiredBuses, devBus) {
-				slog.Debug("skipping bus", "bus", parts[0])
+		if runtime.GOOS != "darwin" {
+			if d.Interface != 0 {
+				slog.Debug("skipping non default interface", "interface", d.Interface)
 				continue
 			}
-		}
 
-		if len(desiredAddresses) > 0 {
-			devAddress, err := strconv.ParseUint(parts[1], 16, 64)
-			if err != nil {
-				slog.Error("failed to parse device address", "address", parts[1], "error", err.Error())
-				os.Exit(1)
+			parts := strings.Split(d.Path, ":")
+			if len(parts) < 3 {
+				slog.Debug("skipping invalid path", "path", d.Path)
+				continue
 			}
 
-			if !slices.Contains(desiredAddresses, devAddress) {
-				slog.Debug("skipping address", "address", parts[1])
-				continue
+			if len(desiredBuses) > 0 {
+				devBus, err := strconv.ParseUint(parts[0], 16, 64)
+				if err != nil {
+					slog.Error("failed to parse device bus", "bus", parts[0], "error", err.Error())
+					os.Exit(1)
+				}
+
+				if !slices.Contains(desiredBuses, devBus) {
+					slog.Debug("skipping bus", "bus", parts[0])
+					continue
+				}
+			}
+
+			if len(desiredAddresses) > 0 {
+				devAddress, err := strconv.ParseUint(parts[1], 16, 64)
+				if err != nil {
+					slog.Error("failed to parse device address", "address", parts[1], "error", err.Error())
+					os.Exit(1)
+				}
+
+				if !slices.Contains(desiredAddresses, devAddress) {
+					slog.Debug("skipping address", "address", parts[1])
+					continue
+				}
 			}
 		}
 
