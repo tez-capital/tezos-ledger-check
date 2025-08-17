@@ -5,9 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"runtime"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/karalabe/hid"
@@ -34,14 +32,9 @@ func main() {
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:    "bus",
-				Usage:   "Filter by bus (first part of HID path)",
+				Name:    "path",
+				Usage:   "Filter by HID path",
 				Aliases: []string{"b"},
-			},
-			&cli.StringFlag{
-				Name:    "address",
-				Usage:   "Filter by address (second part of HID path)",
-				Aliases: []string{"a"},
 			},
 			&cli.StringFlag{
 				Name:  "ledger-id",
@@ -78,7 +71,7 @@ func main() {
 				log.Fatalf("Invalid log level: %s", logLevel)
 			}
 
-			runLedgerCheck(c.String("bus"), c.String("address"), c.String("ledger-id"))
+			runLedgerCheck(c.String("path"), c.String("ledger-id"))
 			return nil
 		},
 	}
@@ -90,36 +83,16 @@ func main() {
 
 }
 
-func runLedgerCheck(busString, addressString, desiredLedgerId string) {
+func runLedgerCheck(pathString, desiredLedgerId string) {
 	if !hid.Supported() {
 		slog.Error("HID not supported")
 		os.Exit(1)
 	}
 
-	desiredBuses := []uint64{}
-	if busString != "" {
-		busStrings := strings.Split(busString, ",")
-		for _, b := range busStrings {
-			bus, err := strconv.ParseUint(b, 16, 64)
-			if err != nil {
-				slog.Error("failed to parse bus", "bus", b, "error", err.Error())
-				os.Exit(1)
-			}
-			desiredBuses = append(desiredBuses, bus)
-		}
-	}
-
-	desiredAddresses := []uint64{}
-	if addressString != "" {
-		addressStrings := strings.Split(addressString, ",")
-		for _, a := range addressStrings {
-			address, err := strconv.ParseUint(a, 16, 64)
-			if err != nil {
-				slog.Error("failed to parse address", "address", a, "error", err.Error())
-				os.Exit(1)
-			}
-			desiredAddresses = append(desiredAddresses, address)
-		}
+	desiredPaths := []string{}
+	if pathString != "" {
+		pathStrings := strings.Split(pathString, ",")
+		desiredPaths = append(desiredPaths, pathStrings...)
 	}
 
 	desiredLedgerIds := []string{}
@@ -140,43 +113,10 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 			continue
 		}
 
-		parts := []string{"-", "-", "-"}
-		if runtime.GOOS != "darwin" {
-			if d.Interface != 0 {
-				slog.Debug("skipping non default interface", "interface", d.Interface)
+		if len(desiredPaths) > 0 {
+			if !slices.Contains(desiredPaths, d.Path) {
+				slog.Debug("skipping path", "path", d.Path)
 				continue
-			}
-
-			parts = strings.Split(d.Path, ":")
-			if len(parts) < 3 {
-				slog.Debug("skipping invalid path", "path", d.Path)
-				continue
-			}
-
-			if len(desiredBuses) > 0 {
-				devBus, err := strconv.ParseUint(parts[0], 16, 64)
-				if err != nil {
-					slog.Error("failed to parse device bus", "bus", parts[0], "error", err.Error())
-					os.Exit(1)
-				}
-
-				if !slices.Contains(desiredBuses, devBus) {
-					slog.Debug("skipping bus", "bus", parts[0])
-					continue
-				}
-			}
-
-			if len(desiredAddresses) > 0 {
-				devAddress, err := strconv.ParseUint(parts[1], 16, 64)
-				if err != nil {
-					slog.Error("failed to parse device address", "address", parts[1], "error", err.Error())
-					os.Exit(1)
-				}
-
-				if !slices.Contains(desiredAddresses, devAddress) {
-					slog.Debug("skipping address", "address", parts[1])
-					continue
-				}
 			}
 		}
 
@@ -207,7 +147,7 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 				}
 			}
 
-			fmt.Printf("%s;%s;%s;%s:%s\n", ledgerId, appVersion, authorizedPath, parts[0] /* bus */, parts[1] /* address */)
+			fmt.Printf("%s;%s;%s;%s\n", ledgerId, appVersion, authorizedPath, d.Path)
 		}()
 	}
 }
