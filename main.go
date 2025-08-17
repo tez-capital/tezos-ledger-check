@@ -136,13 +136,14 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 
 		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 
+		parts := []string{"-", "-", "-"}
 		if runtime.GOOS != "darwin" {
 			if d.Interface != 0 {
 				slog.Debug("skipping non default interface", "interface", d.Interface)
 				continue
 			}
 
-			parts := strings.Split(d.Path, ":")
+			parts = strings.Split(d.Path, ":")
 			if len(parts) < 3 {
 				slog.Debug("skipping invalid path", "path", d.Path)
 				continue
