@@ -133,6 +133,7 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 			continue
 		}
 
+		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 		if d.Interface != 0 {
 			slog.Debug("skipping non default interface", "interface", d.Interface)
 			continue
