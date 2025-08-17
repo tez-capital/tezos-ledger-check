@@ -3,7 +3,7 @@ module github.com/tez-capital/tezos-ledger-check
 go 1.25.0
 
 require (
-	github.com/karalabe/hid v1.0.0
+	github.com/karalabe/hid v1.0.1-0.20240919124526-821c38d2678e
 	github.com/stretchr/testify v1.8.4
 	github.com/trilitech/tzgo v1.22.0
 	github.com/urfave/cli/v2 v2.27.7
