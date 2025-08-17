@@ -98,7 +98,7 @@ func readAPDU(device hid.Device) (sw int, payload []byte, err error) {
 
 	// Read the first packet.
 	firstPacket := make([]byte, packetLength)
-	n, err := device.Read(firstPacket)
+	n, err := device.ReadTimeout(firstPacket, 500)
 	if err != nil {
 		return 0, nil, fmt.Errorf("read first packet: %w", err)
 	}

@@ -192,10 +192,7 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 			ledgerId, err = ledger.GetLedgerId(device)
 			if err != nil {
 				slog.Debug("failed to get ledger id", "error", err.Error())
-				ledgerId = fmt.Sprintf("-,%s", err.Error())
-				if len(desiredLedgerIds) > 0 {
-					return
-				}
+				return
 			} else {
 				if len(desiredLedgerIds) > 0 && !slices.Contains(desiredLedgerIds, ledgerId) {
 					return
