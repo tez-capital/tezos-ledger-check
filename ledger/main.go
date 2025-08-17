@@ -89,11 +89,7 @@ func IsLedger(vendorID uint16) bool {
 	return slices.Contains(VENDOR_IDS, vendorID)
 }
 
-func GetLedgerId(h *hid.Device) (string, error) {
-	if !IsLedger(h.DeviceInfo.VendorID) {
-		return "", fmt.Errorf("device is not a Ledger device")
-	}
-
+func GetLedgerId(h hid.Device) (string, error) {
 	apdu, err := createGetPublicKeyAPDU()
 	if err != nil {
 		return "", err
@@ -129,11 +125,7 @@ func createGetVersionAPDU() ([]byte, error) {
 	return apdu, nil
 }
 
-func GetAppVersion(h *hid.Device) (string, error) {
-	if !IsLedger(h.DeviceInfo.VendorID) {
-		return "", fmt.Errorf("device is not a Ledger device")
-	}
-
+func GetAppVersion(h hid.Device) (string, error) {
 	apdu, err := createGetVersionAPDU()
 	if err != nil {
 		return "", err
@@ -161,11 +153,7 @@ func createGetAuthorizedKeyAPDU() ([]byte, error) {
 	return apdu, nil
 }
 
-func GetAuthorizedPath(h *hid.Device) (string, error) {
-	if !IsLedger(h.DeviceInfo.VendorID) {
-		return "", fmt.Errorf("device is not a Ledger device")
-	}
-
+func GetAuthorizedPath(h hid.Device) (string, error) {
 	apdu, err := createGetAuthorizedKeyAPDU()
 	if err != nil {
 		return "", err

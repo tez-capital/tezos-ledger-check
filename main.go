@@ -127,7 +127,11 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 		desiredLedgerIds = strings.Split(desiredLedgerId, ",")
 	}
 
-	hids := hid.Enumerate(0, 0)
+	hids, err := hid.Enumerate(0, 0)
+	if err != nil {
+		slog.Error("failed to enumerate HID devices", "error", err.Error())
+		os.Exit(1)
+	}
 
 	for _, d := range hids {
 		if !ledger.IsLedger(d.VendorID) {
@@ -183,6 +187,11 @@ func runLedgerCheck(busString, addressString, desiredLedgerId string) {
 				return
 			}
 			defer device.Close()
+
+			if !ledger.IsLedger(d.VendorID) {
+				slog.Debug("device is not a Ledger device", "vendor_id", d.VendorID)
+				return
+			}
 
 			ledgerId, appVersion, authorizedPath := "-", "-", "-"
 			ledgerId, err = ledger.GetLedgerId(device)

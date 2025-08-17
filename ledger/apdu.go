@@ -44,7 +44,7 @@ func (r APDUResult) Error() error {
 	}
 }
 
-func writeAPDU(device *hid.Device, apdu []byte) error {
+func writeAPDU(device hid.Device, apdu []byte) error {
 	apduLen := len(apdu)
 
 	if apduLen+7 > packetLength {
@@ -89,7 +89,7 @@ func writeAPDU(device *hid.Device, apdu []byte) error {
 	return nil
 }
 
-func readAPDU(device *hid.Device) (sw int, payload []byte, err error) {
+func readAPDU(device hid.Device) (sw int, payload []byte, err error) {
 	var (
 		expectedSeq uint16 = 0
 		fullPayload []byte
@@ -181,7 +181,7 @@ func readAPDU(device *hid.Device) (sw int, payload []byte, err error) {
 	return sw, dataPayload, nil
 }
 
-func transportAPDU(h *hid.Device, apdu []byte) ([]byte, error) {
+func transportAPDU(h hid.Device, apdu []byte) ([]byte, error) {
 	err := writeAPDU(h, apdu)
 	if err != nil {
 		return nil, err
