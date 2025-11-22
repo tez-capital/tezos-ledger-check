@@ -50,6 +50,10 @@ func main() {
 				Name:  "version",
 				Usage: "Prints the version",
 			},
+			&cli.StringFlag{
+				Name:  "skip-paths",
+				Usage: "Comma-separated list of device paths to skip",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if c.Bool("version") {
@@ -71,7 +75,7 @@ func main() {
 				log.Fatalf("Invalid log level: %s", logLevel)
 			}
 
-			runLedgerCheck(c.String("path"), c.String("ledger-id"))
+			runLedgerCheck(c.String("path"), c.String("ledger-id"), c.String("skip-paths"))
 			return nil
 		},
 	}
@@ -83,7 +87,7 @@ func main() {
 
 }
 
-func runLedgerCheck(pathString, desiredLedgerId string) {
+func runLedgerCheck(pathString, desiredLedgerId, skipPaths string) {
 	if !hid.Supported() {
 		slog.Error("HID not supported")
 		os.Exit(1)
@@ -106,6 +110,11 @@ func runLedgerCheck(pathString, desiredLedgerId string) {
 		os.Exit(1)
 	}
 
+	skipPathsList := []string{}
+	if skipPaths != "" {
+		skipPathsList = strings.Split(skipPaths, ",")
+	}
+
 	for _, d := range hids {
 		slog.Debug("found device", "interface", d.Interface, "vendor_id", d.VendorID, "product_id", d.ProductID, "path", d.Path)
 		if !ledger.IsLedger(d.VendorID) {
@@ -118,6 +127,11 @@ func runLedgerCheck(pathString, desiredLedgerId string) {
 				slog.Debug("skipping path", "path", d.Path)
 				continue
 			}
+		}
+
+		if slices.Contains(skipPathsList, d.Path) {
+			slog.Debug("skipping path (in skip list)", "path", d.Path)
+			continue
 		}
 
 		func() {
